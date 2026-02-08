@@ -33,6 +33,21 @@ function slugify(str: string): string {
     .replace(/(^-|-$)/g, '')
 }
 
+function getProductFileContent(files: Record<string, string>, filename: string): string | undefined {
+  if (files[`/product/${filename}`]) return files[`/product/${filename}`]
+  if (files[`product/${filename}`]) return files[`product/${filename}`]
+
+  const match = Object.entries(files).find(([path]) => {
+    return path.endsWith(`/product/${filename}`) || path.endsWith(`/${filename}`)
+  })
+
+  return match?.[1]
+}
+
+function hasProductFile(files: Record<string, string>, filename: string): boolean {
+  return !!getProductFileContent(files, filename)
+}
+
 /**
  * Parse product-overview.md content into ProductOverview structure
  *
@@ -155,8 +170,8 @@ export function parseProductRoadmap(md: string): ProductRoadmap | null {
  * Load all product data from markdown files and other sources
  */
 export function loadProductData(): ProductData {
-  const overviewContent = productFiles['/product/product-overview.md']
-  const roadmapContent = productFiles['/product/product-roadmap.md']
+  const overviewContent = getProductFileContent(productFiles, 'product-overview.md')
+  const roadmapContent = getProductFileContent(productFiles, 'product-roadmap.md')
 
   return {
     overview: overviewContent ? parseProductOverview(overviewContent) : null,
@@ -171,14 +186,14 @@ export function loadProductData(): ProductData {
  * Check if product overview has been defined
  */
 export function hasProductOverview(): boolean {
-  return '/product/product-overview.md' in productFiles
+  return hasProductFile(productFiles, 'product-overview.md')
 }
 
 /**
  * Check if product roadmap has been defined
  */
 export function hasProductRoadmap(): boolean {
-  return '/product/product-roadmap.md' in productFiles
+  return hasProductFile(productFiles, 'product-roadmap.md')
 }
 
 /**
